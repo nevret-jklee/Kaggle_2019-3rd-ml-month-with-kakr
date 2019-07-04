@@ -1,0 +1,426 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5"
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from matplotlib import pyplot as plt\n",
+    "\n",
+    "# plt.rcParams['figure.figsize'] = 12, 8\n",
+    "%matplotlib inline\n",
+    "\n",
+    "# Take a look at a iceberg\n",
+    "import plotly.offline as py\n",
+    "import plotly.graph_objs as go\n",
+    "from plotly import tools\n",
+    "\n",
+    "py.init_notebook_mode(connected=True)\n",
+    "# plotly를 jupyter notebook에 사용하려면 이 커맨드를 입력해야 합니다."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "_cell_guid": "79c7e3d0-c299-4dcb-8224-4455121ee9b0",
+    "_uuid": "d629ff2d2480ee46fbb7e2d37f6b5fab8052498a"
+   },
+   "outputs": [],
+   "source": [
+    "# Load data\n",
+    "train = pd.read_json('../input/train.json')\n",
+    "test = pd.read_json('../input/test.json')\n",
+    "\n",
+    "train.inc_angle = train.inc_angle.replace('na', 0)\n",
+    "train.inc_angle = train.inc_angle.astype(float).fillna(0.0)\n",
+    "print('done!')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Genearte the training data\n",
+    "# Create 3 bands having HH, HV and avg of both\n",
+    "X_band_1 = np.array([np.array(band).astype(np.float32).reshape(75,75) for band in train['band_1']])\n",
+    "X_band_2 = np.array([np.array(band).astype(np.float32).reshape(75,75) for band in train['band_2']])\n",
+    "X_train = np.concatenate([X_band_1[:, :, :, np.newaxis], X_band_2[:, :, :, np.newaxis],((X_band_1+X_band_2)/2)[:, :, :, np.newaxis]], axis=-1)\n",
+    "\n",
+    "X_band_test_1 = np.array([np.array(band).astype(np.float32).reshape(75,75) for band in test['band_1']])\n",
+    "X_band_test_2 = np.array([np.array(band).astype(np.float32).reshape(75,75) for band in test['band_2']])\n",
+    "X_test = np.concatenate([X_band_test_1[:, :, :, np.newaxis], X_band_test_2[:, :, :, np.newaxis],((X_band_test_1+X_band_test_2)/2)[:, :, :, np.newaxis]], axis=-1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def plot_contour_2d(band1, band2, label):\n",
+    "    fig = tools.make_subplots(rows=1, cols=2, specs=[[{'is_3d': True}, {'is_3d': True}]])\n",
+    "    fig.append_trace(dict(type='surface', z=band1, colorscale='RdBu', scene='scene1', showscale=False), 1, 1)\n",
+    "    fig.append_trace(dict(type='surface', z=band2, colorscale='RdBu', scene='scene2', showscale=False), 1, 2)\n",
+    "    fig['layout'].update(title='3D surface plot for \"{}\" (left is from band1, right is from band2)'.format(label), titlefont=dict(size=30), height=800, width=1200)\n",
+    "    \n",
+    "    py.iplot(fig)\n",
+    "    \n",
+    "    fig, ax = plt.subplots(1, 2, figsize=(16, 10))\n",
+    "    ax[0].imshow(X_band_1[num, :, :])\n",
+    "    ax[0].set_title('Image from band_1', fontsize=15)\n",
+    "    ax[1].imshow(X_band_2[num, :, :])\n",
+    "    ax[1].set_title('Image from band_2', fontsize=15)\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "num = 0\n",
+    "label = 'iceberg' if (train['is_iceberg'].values[num] == 1) else 'ship'\n",
+    "plot_contour_2d(X_band_1[num, :, :], X_band_2[num, :, :], label)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "num = 100\n",
+    "label = 'iceberg' if (train['is_iceberg'].values[num] == 1) else 'ship'\n",
+    "plot_contour_2d(X_band_1[num, :, :], X_band_2[num, :, :], label)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> 위의 두 set은 ship을 나타냄."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "num = 2\n",
+    "label = 'iceberg' if (train['is_iceberg'].values[num] == 1) else 'ship'\n",
+    "plot_contour_2d(X_band_1[num, :, :], X_band_2[num, :, :], label)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "num = 125\n",
+    "label = 'iceberg' if (train['is_iceberg'].values[num] == 1) else 'ship'\n",
+    "plot_contour_2d(X_band_1[num, :, :], X_band_2[num, :, :], label)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Import Keras\n",
+    "from matplotlib import pyplot\n",
+    "from keras.preprocessing.image import ImageDataGenerator\n",
+    "from keras.models import Sequential\n",
+    "from keras.layers import Conv2D, MaxPooling2D, Dense, Dropout, Input, Flatten, Activation\n",
+    "from keras.layers import GlobalMaxPooling2D\n",
+    "from keras.layers.normalization import BatchNormalization\n",
+    "from keras.layers.merge import Concatenate\n",
+    "from keras.models import Model\n",
+    "from keras import initializers\n",
+    "from keras.optimizers import Adam\n",
+    "from keras.callbacks import ModelCheckpoint, Callback, EarlyStopping"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# define our model\n",
+    "def getModel():\n",
+    "    # Building the model\n",
+    "    gmodel=Sequential()\n",
+    "    # Conv Layer 1\n",
+    "    gmodel.add(Conv2D(64, kernel_size=(3, 3),activation='relu', input_shape=(75, 75, 3)))\n",
+    "    gmodel.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Conv Layer 2\n",
+    "    gmodel.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))\n",
+    "    gmodel.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Conv Layer 3\n",
+    "    gmodel.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))\n",
+    "    gmodel.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Conv Layer 4\n",
+    "    gmodel.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))\n",
+    "    gmodel.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Flatten the data for upcoming dense layers\n",
+    "    gmodel.add(Flatten())\n",
+    "    \n",
+    "    # Dense Layers\n",
+    "    gmodel.add(Dense(512))\n",
+    "    gmodel.add(Activation('relu'))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Dense Layer 2\n",
+    "    gmodel.add(Dense(256))\n",
+    "    gmodel.add(Activation('relu'))\n",
+    "    gmodel.add(Dropout(0.2))\n",
+    "    \n",
+    "    # Sigmoid Layer\n",
+    "    gmodel.add(Dense(1))\n",
+    "    gmodel.add(Activation('sigmoid'))\n",
+    "    \n",
+    "    mypotim=Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)\n",
+    "    gmodel.compile(loss='binary_crossentropy', optimizer=mypotim, metrics=['accuracy'])\n",
+    "    gmodel.summary()\n",
+    "    return gmodel\n",
+    "\n",
+    "\n",
+    "def get_callbacks(filepath, patience=2):\n",
+    "    es = EarlyStopping('val_loss', patience=patience, mode='min')\n",
+    "    msave = ModelCheckpoint(filepath, save_best_only = True)\n",
+    "    return [es, msave]\n",
+    "\n",
+    "file_path = '.model_weights.hdf5'\n",
+    "callbacks = get_callbacks(filepath=file_path, patience=5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "target_train = train['is_iceberg']\n",
+    "X_train, X_valid, y_train, y_valid = train_test_split(X_train, target_train, random_state=1, train_size=0.8)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "_________________________________________________________________\n",
+      "Layer (type)                 Output Shape              Param #   \n",
+      "=================================================================\n",
+      "conv2d_5 (Conv2D)            (None, 73, 73, 64)        1792      \n",
+      "_________________________________________________________________\n",
+      "max_pooling2d_5 (MaxPooling2 (None, 36, 36, 64)        0         \n",
+      "_________________________________________________________________\n",
+      "dropout_7 (Dropout)          (None, 36, 36, 64)        0         \n",
+      "_________________________________________________________________\n",
+      "conv2d_6 (Conv2D)            (None, 34, 34, 128)       73856     \n",
+      "_________________________________________________________________\n",
+      "max_pooling2d_6 (MaxPooling2 (None, 17, 17, 128)       0         \n",
+      "_________________________________________________________________\n",
+      "dropout_8 (Dropout)          (None, 17, 17, 128)       0         \n",
+      "_________________________________________________________________\n",
+      "conv2d_7 (Conv2D)            (None, 15, 15, 128)       147584    \n",
+      "_________________________________________________________________\n",
+      "max_pooling2d_7 (MaxPooling2 (None, 7, 7, 128)         0         \n",
+      "_________________________________________________________________\n",
+      "dropout_9 (Dropout)          (None, 7, 7, 128)         0         \n",
+      "_________________________________________________________________\n",
+      "conv2d_8 (Conv2D)            (None, 5, 5, 64)          73792     \n",
+      "_________________________________________________________________\n",
+      "max_pooling2d_8 (MaxPooling2 (None, 2, 2, 64)          0         \n",
+      "_________________________________________________________________\n",
+      "dropout_10 (Dropout)         (None, 2, 2, 64)          0         \n",
+      "_________________________________________________________________\n",
+      "flatten_2 (Flatten)          (None, 256)               0         \n",
+      "_________________________________________________________________\n",
+      "dense_4 (Dense)              (None, 512)               131584    \n",
+      "_________________________________________________________________\n",
+      "activation_4 (Activation)    (None, 512)               0         \n",
+      "_________________________________________________________________\n",
+      "dropout_11 (Dropout)         (None, 512)               0         \n",
+      "_________________________________________________________________\n",
+      "dense_5 (Dense)              (None, 256)               131328    \n",
+      "_________________________________________________________________\n",
+      "activation_5 (Activation)    (None, 256)               0         \n",
+      "_________________________________________________________________\n",
+      "dropout_12 (Dropout)         (None, 256)               0         \n",
+      "_________________________________________________________________\n",
+      "dense_6 (Dense)              (None, 1)                 257       \n",
+      "_________________________________________________________________\n",
+      "activation_6 (Activation)    (None, 1)                 0         \n",
+      "=================================================================\n",
+      "Total params: 560,193\n",
+      "Trainable params: 560,193\n",
+      "Non-trainable params: 0\n",
+      "_________________________________________________________________\n",
+      "Train on 1283 samples, validate on 321 samples\n",
+      "Epoch 1/20\n",
+      "1283/1283 [==============================] - 20s 16ms/step - loss: 1.1066 - acc: 0.5269 - val_loss: 0.6044 - val_acc: 0.6355\n",
+      "Epoch 2/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.5553 - acc: 0.6765 - val_loss: 0.5490 - val_acc: 0.7072\n",
+      "Epoch 3/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.5183 - acc: 0.7280 - val_loss: 0.5080 - val_acc: 0.7788\n",
+      "Epoch 4/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.5027 - acc: 0.7327 - val_loss: 0.5000 - val_acc: 0.7477\n",
+      "Epoch 5/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.4825 - acc: 0.7358 - val_loss: 0.4548 - val_acc: 0.8069\n",
+      "Epoch 6/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.4631 - acc: 0.7724 - val_loss: 0.4144 - val_acc: 0.8162\n",
+      "Epoch 7/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.4057 - acc: 0.8090 - val_loss: 0.4039 - val_acc: 0.8660\n",
+      "Epoch 8/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.4059 - acc: 0.7981 - val_loss: 0.3922 - val_acc: 0.7975\n",
+      "Epoch 9/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3924 - acc: 0.8192 - val_loss: 0.3567 - val_acc: 0.8692\n",
+      "Epoch 10/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3791 - acc: 0.8223 - val_loss: 0.3366 - val_acc: 0.8754\n",
+      "Epoch 11/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3692 - acc: 0.8340 - val_loss: 0.3072 - val_acc: 0.8723\n",
+      "Epoch 12/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3366 - acc: 0.8441 - val_loss: 0.4660 - val_acc: 0.8162\n",
+      "Epoch 13/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3241 - acc: 0.8441 - val_loss: 0.3073 - val_acc: 0.8629\n",
+      "Epoch 14/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3204 - acc: 0.8363 - val_loss: 0.2962 - val_acc: 0.8723\n",
+      "Epoch 15/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3451 - acc: 0.8449 - val_loss: 0.3256 - val_acc: 0.8598\n",
+      "Epoch 16/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3080 - acc: 0.8620 - val_loss: 0.3016 - val_acc: 0.8598\n",
+      "Epoch 17/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3184 - acc: 0.8636 - val_loss: 0.3199 - val_acc: 0.8629\n",
+      "Epoch 18/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.2976 - acc: 0.8644 - val_loss: 0.2646 - val_acc: 0.8847\n",
+      "Epoch 19/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.3368 - acc: 0.8449 - val_loss: 0.3099 - val_acc: 0.8847\n",
+      "Epoch 20/20\n",
+      "1283/1283 [==============================] - 19s 15ms/step - loss: 0.2820 - acc: 0.8706 - val_loss: 0.3027 - val_acc: 0.8785\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<keras.callbacks.History at 0x7fac36fc6dd8>"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Without denoising, core features.\n",
+    "gmodel = getModel()\n",
+    "gmodel.fit(X_train, y_train,\n",
+    "          batch_size=24,\n",
+    "          epochs=20,\n",
+    "          verbose=1,\n",
+    "          validation_data=(X_valid, y_valid),\n",
+    "          callbacks = callbacks)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "321/321 [==============================] - 1s 3ms/step\n",
+      "Test loss: 0.26464218353690155\n",
+      "Test accuracy:  0.8847352024922118\n"
+     ]
+    }
+   ],
+   "source": [
+    "gmodel.load_weights(filepath=file_path)\n",
+    "score = gmodel.evaluate(X_valid, y_valid, verbose=1)\n",
+    "print('Test loss:', score[0])\n",
+    "print('Test accuracy: ', score[1])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "predicted_test = gmodel.predict_proba(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "submission = pd.DataFrame()\n",
+    "submission['id'] = test['id']\n",
+    "submission['is_iceberg'] = predicted_test.reshape((predicted_test.shape[0]))\n",
+    "submission.to_csv('sub.csv', index=False)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
