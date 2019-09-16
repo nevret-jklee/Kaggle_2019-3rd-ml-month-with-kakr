@@ -1,5 +1,10 @@
-## TransactionDT  :  주어진 참조 날짜 시간의 타임 델타 (실제 타임 스탬프 아님)
-TransactionDT의 첫 번째 값은 86400이며 이는 하루의 초 수 (60 * 60 * 24 = 86400)에 해당하므로 단위는 초라고 생각함.
+# Description of Data
+
+---
+
+## TransactionDT 
+- timedelta from a given reference datetime (not an actual timestamp)
+- TransactionDT의 첫 번째 값은 86400이며 이는 하루의 초 수 (60 * 60 * 24 = 86400)에 해당하므로 단위는 초라고 생각함.
 이를 볼 때 최대 값이 15811131이므로 이는 183일에 해당하고 따라서 데이터가 6 개월에 걸쳐 있다는 것을 알 수 있음.
 
 ## TransactionAMT  :  거래 결제 금액 (USD)
