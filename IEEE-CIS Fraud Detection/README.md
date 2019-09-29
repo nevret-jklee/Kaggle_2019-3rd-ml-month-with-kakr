@@ -34,3 +34,5 @@ Submissions are evaluated on **area under the ROC curve** between the predicted 
 - September 24, 2019 - External Data Disclosure deadline. This is the last day to disclose any used external data to the competition forums
 
 - October 1, 2019 - Final submission deadline. After this date, we will not be taking any more submissions. Remember to select your two best submissions for final scoring.
+
+## D-3
