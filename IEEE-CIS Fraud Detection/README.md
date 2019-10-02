@@ -35,4 +35,10 @@ Submissions are evaluated on **area under the ROC curve** between the predicted 
 
 - October 1, 2019 - Final submission deadline. After this date, we will not be taking any more submissions. Remember to select your two best submissions for final scoring.
 
-## D-3
+
+<br>
+
+
+## Reference
+
+[파이썬 Scikit-Learn형식 XGBoost 파라미터](https://blog.naver.com/PostView.nhn?blogId=gustn3964&logNo=221431714122&from=search&redirect=Log&widgetTypeCall=true&directAccess=false)
