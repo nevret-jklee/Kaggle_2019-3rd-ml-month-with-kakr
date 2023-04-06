@@ -7,9 +7,8 @@ https://www.kaggle.com/c/2019-3rd-ml-month-with-kakr/overview
 ## Introduction
 
 안녕하세요. Titanic으로 kaggle에 입문하자마자 무작정 3차 대회에 뛰어든 캐글 초보자입니다. <br>
-제가 이렇게 Notebook을 올리는 이유는 다른 고수분들의 Notebook과 비교하면 부끄러운 수준이지만 제 스스로 대회 기간동안 고민하면서 공부한 과정들을 
-복기하기 위함입니다. <br>
-또한 딥러닝 지식이 전무하다시피 했던 저의 경험을 공유하면서 추후에 대회를 시작하는 초보자분들께 조금이나마 도움이 됐으면 하는 바람입니다.
+제가 이렇게 Notebook을 올리는 이유는 다른 잘하시는분들의 Notebook과 비교하면 부끄러운 수준이지만 제 스스로 대회 기간동안 고민하면서 공부한 과정들을 
+복기하기 위함입니다. 또한 딥러닝 지식이 전무하다시피 했던 저의 경험을 공유하면서 추후에 대회를 시작하는 초보자분들께 조금이나마 도움이 됐으면 하는 바람입니다.
 
 
 <br>
@@ -29,8 +28,7 @@ https://www.kaggle.com/c/2019-3rd-ml-month-with-kakr/overview
   https://www.kaggle.com/janged/3rd-ml-month-car-model-classification-xception
 
 
-Reference Notebook을 간단하게 4개로 추려서 올렸지만 다른 분들께서 올려주신 Notebook, Discussion들을 전부 봤다고해도 과언이 아닐 정도로 <br>
-꾸준히 참고하면서 많은 도움을 받았습니다. 공유해주신 모든 분들께 감사드립니다!
+Reference Notebook을 간단하게 4개로 추려서 올렸지만 다른 분들께서 올려주신 Notebook, Discussion들을 전부 봤다고해도 과언이 아닐 정도로 꾸준히 참고하면서 많은 도움을 받았습니다. 공유해주신 모든 분들께 감사드립니다!
 
 
 <br>
